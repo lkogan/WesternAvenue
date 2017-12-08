@@ -1,31 +1,41 @@
 ﻿@{
     ViewBag.Title = "Home Page";
+} 
+<script src="~/Scripts/_references.js"></script>
+
+<div ng-app="myapp" ng-controller="mapsController">
+    <!--It displays the markers links-->
+    <div class="locations">
+        <ul>
+            <li ng-repeat="l in locations" ng-click="ShowLocation(l.LocationID)"><a href="#">{{l.Title}}</a></li>
+        </ul>
+    </div>
+    <div class="maps">
+        <!-- Add directive code (gmap directive) for show map and markers-->
+        <ui-gmap-google-map style="box-shadow:2px 2px 2px 2px lightgrey" center="map.center" zoom="map.zoom">
+            <ui-gmap-marker ng-repeat="marker in markers" coords="marker.coords" options="marker.options" events="marker.events" idkey="marker.id">
+                <ui-gmap-window options="windowOptions" show="windowOptions.show">
+                    <div style="max-width:200px">
+                        <div class="header"><strong>{{marker.title}}</strong></div>
+                        <div id="mapcontent">
+                            <p>
+                                <img ng-src="{{marker.image}}" style="width:200px"/>
+                                <div>{{marker.address}}</div>
+                            </p>
+                        </div>
+                    </div>
+                </ui-gmap-window>
+            </ui-gmap-marker>
+        </ui-gmap-google-map>
+    </div>
+</div>
+ 
+@section Scripts{
+    @* AngularJS library *@
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.6/angular.js"></script>
+    @* google map*@
+    <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
+    <script src="//rawgit.com/angular-ui/angular-google-maps/2.0.X/dist/angular-google-maps.js"></script>
+
+    <script src="~/Scripts/angular_module.js"></script>
 }
-
-<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="http://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
-</div>
-
-<div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-    </div>
-</div>

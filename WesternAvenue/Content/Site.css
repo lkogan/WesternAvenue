@@ -9,6 +9,12 @@
     padding-right: 15px;
 }
 
+.angular-google-map-container
+{
+    height: 600px !important;  
+}
+ 
+
 /* Override the default bootstrap behavior where horizontal description lists 
    will truncate terms that are too long to fit in the left column 
 */
@@ -22,3 +28,15 @@ select,
 textarea {
     max-width: 280px;
 }
+
+.angular-google-map-container
+{    
+height: 300px;    
+box-shadow:2px 2px 3px 3px lightgrey;    
+}    
+.angular-google-map 
+{    
+width: 80%;    
+height: 100%;    
+margin: auto 0px;    
+}    
