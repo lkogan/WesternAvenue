@@ -90,8 +90,8 @@ namespace WesternAvenue.Controllers
                      
                     List<StopOnTrip> stopsList = JsonConvert.DeserializeObject<List<StopOnTrip>>(stopTimesJSON);
 
-                    //if (!stopsList[0].stop_id.Equals("CUS")) //If DOES not start at Chicago Union Station = INBOUND
-                    if (stopsList[0].stop_id.Equals("CUS")) //If starts at Chicago Union Station = OUTBOUND
+                    if (!stopsList[0].stop_id.Equals("CUS")) //If DOES not start at Chicago Union Station = INBOUND
+                    //if (stopsList[0].stop_id.Equals("CUS")) //If starts at Chicago Union Station = OUTBOUND
                     {
                         StopOnTrip westernAve = stopsList.Where(x => x.stop_id.Equals("WESTERNAVE")).FirstOrDefault();
 
