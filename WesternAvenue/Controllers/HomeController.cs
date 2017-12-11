@@ -31,6 +31,8 @@ namespace WesternAvenue.Controllers
         public string Description { get; set; }
 
         public string ImagePath { get; set; }
+
+        public string ScheduledTime { get; set; }
     }
       
     public class HomeController : Controller
@@ -64,69 +66,76 @@ namespace WesternAvenue.Controllers
         public HomeController()
         { 
             lstLocations = new List<Location>();
-              
-            string positionJSON = Get_JSON_GTFS_Response("https://gtfsapi.metrarail.com/gtfs/positions");
-            List<TripPosition> positionList = JsonConvert.DeserializeObject<List<TripPosition>>(positionJSON);
-            
+
             string tripUpdateJSON = Get_JSON_GTFS_Response("https://gtfsapi.metrarail.com/gtfs/tripUpdates");
             List<TripUpdateCollection> tripUpdateList = JsonConvert.DeserializeObject<List<TripUpdateCollection>>(tripUpdateJSON);
+            
+            string positionJSON = Get_JSON_GTFS_Response("https://gtfsapi.metrarail.com/gtfs/positions");
+            List<TripPosition> positionList = JsonConvert.DeserializeObject<List<TripPosition>>(positionJSON);
+
+            List<string> lstRoutesFilter = new List<string>();
+            lstRoutesFilter.Add("MD-N");
+            lstRoutesFilter.Add("MD-W");
+            lstRoutesFilter.Add("NCS");
+             
+            //Filter positions to contain only routes that stop at Western Avenue
+            positionList = positionList
+                .Where(a => lstRoutesFilter.Any(b => a.vehicle.trip.trip_id.StartsWith(b)))
+                .ToList();
 
             for (int i = 0; i < positionList.Count; i++)
             {
                 string tripID = positionList[i].vehicle.trip.trip_id;
+                 
+                string stopTimesJSON = Get_JSON_GTFS_Response("https://gtfsapi.metrarail.com/gtfs/schedule/stop_times/" + tripID);
 
-                //Routes that stop at Western Avenue station
-                if (
-                    (tripID.StartsWith("MD-N"))||
-                    (tripID.StartsWith("MD-W")) ||
-                    (tripID.StartsWith("NCS"))
-                    )
-                {
-                    string stopTimesJSON = Get_JSON_GTFS_Response("https://gtfsapi.metrarail.com/gtfs/schedule/stop_times/" + tripID);
+                TripUpdateCollection tuc = tripUpdateList.Where(x => x.id.Equals(tripID)).FirstOrDefault();
 
-                    TripUpdateCollection tuc = tripUpdateList.Where(x => x.id.Equals(tripID)).FirstOrDefault();
-
-                    var tripDelay = tuc.trip_update.delay;
+                var tripDelay = tuc.trip_update.delay;
                      
-                    List<StopOnTrip> stopsList = JsonConvert.DeserializeObject<List<StopOnTrip>>(stopTimesJSON);
+                List<StopOnTrip> stopsList = JsonConvert.DeserializeObject<List<StopOnTrip>>(stopTimesJSON);
 
-                    if (!stopsList[0].stop_id.Equals("CUS")) //If DOES not start at Chicago Union Station = INBOUND
-                    //if (stopsList[0].stop_id.Equals("CUS")) //If starts at Chicago Union Station = OUTBOUND
+                if (!stopsList[0].stop_id.Equals("CUS"))    //INBOUND - DOES not start at Chicago Union Station
+                //if (stopsList[0].stop_id.Equals("CUS"))   //OUTBOUND - starts at Chicago Union Station
+                {
+                    StopOnTrip westernAve = stopsList.Where(x => x.stop_id.Equals("WESTERNAVE")).FirstOrDefault();
+
+                    string arrivalTimeOnWestern = westernAve.arrival_time;
+
+                    string dateTimeString = positionList[i].vehicle.trip.start_date + " " + positionList[i].vehicle.trip.start_time;
+
+                    DateTime startDt = DateTime.ParseExact(dateTimeString,
+                                            "yyyyMMdd HH:mm:ss",
+                                            CultureInfo.InvariantCulture,
+                                            DateTimeStyles.None);
+
+                    string Delay = (tripDelay != null) ? Environment.NewLine + tripDelay.ToString() : null;
+
+                    Location loc = new Location
                     {
-                        StopOnTrip westernAve = stopsList.Where(x => x.stop_id.Equals("WESTERNAVE")).FirstOrDefault();
+                        LocationID = Convert.ToInt32(positionList[i].id),
 
-                        string arrivalTimeOnWestern = westernAve.arrival_time;
+                        TripID = tripID,
 
-                        string dateTimeString = positionList[i].vehicle.trip.start_date + " " + positionList[i].vehicle.trip.start_time;
+                        Lat = positionList[i].vehicle.position.latitude.ToString(),
 
-                        DateTime startDt = DateTime.ParseExact(dateTimeString,
-                                                "yyyyMMdd hh:mm:ss",
-                                                CultureInfo.InvariantCulture,
-                                                DateTimeStyles.None);
+                        Long = positionList[i].vehicle.position.longitude.ToString(),
 
-                        string Delay = (tripDelay != null) ? Environment.NewLine + tripDelay.ToString() : null;
+                        ScheduledTime = arrivalTimeOnWestern,
 
-                        Location loc = new Location
-                        {
-                            LocationID = Convert.ToInt32(positionList[i].id),
+                        Description = positionList[i].vehicle.trip.trip_id + Environment.NewLine
+                                + "Scheduled: " + arrivalTimeOnWestern + Delay,
 
-                            TripID = tripID,
+                        ImagePath = "https://png.icons8.com/material/2x/train.png"
+                    };
 
-                            Lat = positionList[i].vehicle.position.latitude.ToString(),
-
-                            Long = positionList[i].vehicle.position.longitude.ToString(),
-
-                            Description = positionList[i].vehicle.trip.trip_id + Environment.NewLine
-                                    + "Scheduled: " + arrivalTimeOnWestern + Delay,
-
-                            ImagePath = "https://png.icons8.com/material/2x/train.png"
-                        };
-
-                        lstLocations.Add(loc);
-                    }
-                  
-                }                
+                    lstLocations.Add(loc);
+                }
             }
+
+
+            //Sort by start time
+            lstLocations = lstLocations.OrderBy(x => x.ScheduledTime).ToList(); 
         }
 
         public ActionResult Index()
