@@ -90,15 +90,24 @@ namespace WesternAvenue.Controllers
                 string stopTimesJSON = Get_JSON_GTFS_Response("https://gtfsapi.metrarail.com/gtfs/schedule/stop_times/" + tripID);
 
                 TripUpdateCollection tuc = tripUpdateList.Where(x => x.id.Equals(tripID)).FirstOrDefault();
+                if (tuc == null) continue;
+
+                string lastStation = tuc.trip_update.stop_time_update[0].stop_id;
+
+                DateTime dtAtLastStation = tuc.trip_update.stop_time_update[0].departure.time.low;
+                DateTime adjDtAtLastStation = dtAtLastStation.Add(new TimeSpan(-6, 0, 0));
+                string timeAtLastStation = adjDtAtLastStation.ToString("HH:mm:ss");
 
                 var tripDelay = tuc.trip_update.delay;
                      
                 List<StopOnTrip> stopsList = JsonConvert.DeserializeObject<List<StopOnTrip>>(stopTimesJSON);
+                if (stopsList == null) continue;
 
                 if (!stopsList[0].stop_id.Equals("CUS"))    //INBOUND - DOES not start at Chicago Union Station
                 //if (stopsList[0].stop_id.Equals("CUS"))   //OUTBOUND - starts at Chicago Union Station
                 {
                     StopOnTrip westernAve = stopsList.Where(x => x.stop_id.Equals("WESTERNAVE")).FirstOrDefault();
+                    if (westernAve == null) continue;
 
                     string arrivalTimeOnWestern = westernAve.arrival_time;
 
@@ -124,13 +133,14 @@ namespace WesternAvenue.Controllers
                         ScheduledTime = arrivalTimeOnWestern,
 
                         Description = positionList[i].vehicle.trip.trip_id + Environment.NewLine
-                                + "Scheduled: " + arrivalTimeOnWestern + Delay,
+                            + "Last Stop: " + lastStation + ", " + timeAtLastStation + Environment.NewLine
+                            + "Arrives at WESTERNAVE: " + arrivalTimeOnWestern + Delay, 
 
                         ImagePath = "https://png.icons8.com/material/2x/train.png"
                     };
 
-                    lstLocations.Add(loc);
-                }
+                    lstLocations.Add(loc); 
+                } 
             }
 
 
