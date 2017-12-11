@@ -2,7 +2,12 @@
     ViewBag.Title = "Home Page";
 } 
 <script src="~/Scripts/_references.js"></script>
-
+<style> 
+   pre.ng-binding 
+   { 
+       background: mintcream;
+   }
+</style>
 <div ng-app="myapp" ng-controller="mapsController" style="height: 600px" > 
     <div style="float: left; width: 70%" class="maps">
         <!-- Add directive code (gmap directive) for show map and markers-->
@@ -17,7 +22,7 @@
     <div style="float: left; width: 300px" class="locations">
         <p><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Routes</b></p>
         <ul>
-            <li ng-repeat="l in locations" ng-click="ShowLocation(l.LocationID)">
+            <li style="list-style-type: none;" ng-repeat="l in locations" ng-click="ShowLocation(l.LocationID)">
                 <div>
                     <pre>{{l.Description}}</pre>
                 </div>

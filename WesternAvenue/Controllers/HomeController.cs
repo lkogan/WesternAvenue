@@ -94,12 +94,21 @@ namespace WesternAvenue.Controllers
 
                 string lastStation = tuc.trip_update.stop_time_update[0].stop_id;
 
+                int delayInSeconds = tuc.trip_update.stop_time_update[0].arrival.delay;
+
+                string Delay = string.Empty;
+
+                if (delayInSeconds > 0)
+                {
+                    TimeSpan ts = TimeSpan.FromSeconds(delayInSeconds);
+                    Delay = Environment.NewLine + (int)ts.TotalMinutes + " min late";
+                }
+               
+
                 DateTime dtAtLastStation = tuc.trip_update.stop_time_update[0].departure.time.low;
                 DateTime adjDtAtLastStation = dtAtLastStation.Add(new TimeSpan(-6, 0, 0));
                 string timeAtLastStation = adjDtAtLastStation.ToString("HH:mm:ss");
-
-                var tripDelay = tuc.trip_update.delay;
-                     
+  
                 List<StopOnTrip> stopsList = JsonConvert.DeserializeObject<List<StopOnTrip>>(stopTimesJSON);
                 if (stopsList == null) continue;
 
@@ -117,9 +126,7 @@ namespace WesternAvenue.Controllers
                                             "yyyyMMdd HH:mm:ss",
                                             CultureInfo.InvariantCulture,
                                             DateTimeStyles.None);
-
-                    string Delay = (tripDelay != null) ? Environment.NewLine + tripDelay.ToString() : null;
-
+ 
                     Location loc = new Location
                     {
                         LocationID = Convert.ToInt32(positionList[i].id),
