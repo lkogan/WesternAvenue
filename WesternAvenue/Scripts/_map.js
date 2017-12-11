@@ -4,22 +4,22 @@
     var app = angular.module('myapp', ['uiGmapgoogle-maps']); //dependency we should add to angular application  
       
     app.controller('mapsController', function ($scope, $http) {
+
         //this is default coordinates for the map when it loads for first time  
+        //Location is close to Western Avenue Metra station
         $scope.map =
           {
               center:
               {
-                  latitude: 41.8772448,
-                  longitude: -87.6320296
+                  latitude: 41.902243, 
+                  longitude: -87.703288
               },
-              zoom: 15
+              zoom: 14
           }
         $scope.markers = [];
         $scope.locations = [];
 
-
-
-
+         
         //to get all the locations from the server  
         $http.get('/home/GetAllLocation').then(function (data) {
              

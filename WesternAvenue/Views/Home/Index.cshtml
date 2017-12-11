@@ -4,7 +4,7 @@
 <script src="~/Scripts/_references.js"></script>
 
 <div ng-app="myapp" ng-controller="mapsController" style="height: 600px" > 
-    <div style="float: left; width: 60%" class="maps">
+    <div style="float: left; width: 80%" class="maps">
         <!-- Add directive code (gmap directive) for show map and markers-->
         <ui-gmap-google-map style="box-shadow:2px 2px 2px 2px lightgrey" center="map.center" zoom="map.zoom">
             <ui-gmap-marker ng-repeat="marker in markers" coords="marker.coords" options="marker.options" 
@@ -14,10 +14,14 @@
     </div>
     
     <!--It displays the markers links-->
-    <div style="float: left;" class="locations">
+    <div style="float: left; width: 200px" class="locations">
         <p><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Routes</b></p>
         <ul>
-            <li ng-repeat="l in locations" ng-click="ShowLocation(l.LocationID)"><a href="#">{{l.Title}}</a></li>
+            <li ng-repeat="l in locations" ng-click="ShowLocation(l.LocationID)">
+                <div>
+                    <pre>{{l.Description}}</pre>
+                </div>
+            </li>
         </ul>
     </div>
 </div>

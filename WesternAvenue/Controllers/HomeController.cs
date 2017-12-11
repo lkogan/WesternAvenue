@@ -11,6 +11,10 @@ using transit_realtime;
 using System.Text;
 using System.IO;
 using Newtonsoft.Json;
+using System.Globalization;
+using static WesternAvenue.Models.TripPositionModels;
+using static WesternAvenue.Models.AuxModels;
+using static WesternAvenue.Models.TripUpdateModels;
 
 namespace WesternAvenue.Controllers
 {
@@ -18,143 +22,27 @@ namespace WesternAvenue.Controllers
     {
         public int LocationID { get; set; }
 
-        public string Title { get; set; }
+        public string TripID { get; set; }
 
         public string Lat { get; set; }
 
         public string Long { get; set; }
 
-        public string Address { get; set; }
+        public string Description { get; set; }
 
         public string ImagePath { get; set; }
     }
-     
-    public class Trip
-    {
-        [JsonProperty("trip_id")]
-        public string trip_id { get; set; }
-
-        [JsonProperty("route_id")]
-        public string route_id { get; set; }
-
-        [JsonProperty("direction_id")]
-        public object direction_id { get; set; }
-
-        [JsonProperty("start_time")]
-        public string start_time { get; set; }
-
-        [JsonProperty("start_date")]
-        public string start_date { get; set; }
-
-        [JsonProperty("schedule_relationship")]
-        public bool schedule_relationship { get; set; }
-    }
-
-    public class Vehicle2
-    {
-        [JsonProperty("id")]
-        public string id { get; set; }
-
-        [JsonProperty("label")]
-        public string label { get; set; }
-
-        [JsonProperty("license_plate")]
-        public object license_plate { get; set; }
-    }
-
-    public class Position
-    {
-        [JsonProperty("latitude")]
-        public double latitude { get; set; }
-
-        [JsonProperty("longitude")]
-        public double longitude { get; set; }
-
-        [JsonProperty("bearing")]
-        public object bearing { get; set; }
-
-        [JsonProperty("odometer")]
-        public object odometer { get; set; }
-
-        [JsonProperty("speed")]
-        public object speed { get; set; }
-    }
-
-    public class Timestamp
-    {
-        [JsonProperty("low")]
-        public DateTime low { get; set; }
-
-        [JsonProperty("high")]
-        public int high { get; set; }				
-				
-        [JsonProperty("unsigned")]
-        public bool unsigned { get; set; }				
-    }				
-				
-    public class Vehicle
-    {
-        [JsonProperty("trip")]
-        public Trip trip { get; set; }
-
-        [JsonProperty("vehicle")]
-        public Vehicle2 vehicle { get; set; }
-
-        [JsonProperty("position")]
-        public Position position { get; set; }
-
-        [JsonProperty("current_stop_sequence")]
-        public object current_stop_sequence { get; set; }
-
-        [JsonProperty("stop_id")]
-        public object stop_id { get; set; }
-
-        [JsonProperty("current_status")]
-        public int current_status { get; set; }
-
-        [JsonProperty("timestamp")]
-        public Timestamp timestamp { get; set; }
-
-        [JsonProperty("congestion_level")]
-        public object congestion_level { get; set; }
-
-        [JsonProperty("occupancy_status")]
-        public object occupancy_status { get; set; }				
-    }				
-				
-    public class RootObject
-    {
-        [JsonProperty("id")]
-        public string id { get; set; }
-
-        [JsonProperty("is_deleted")]
-        public bool is_deleted { get; set; }
-
-        [JsonProperty("trip_update")]
-        public object trip_update { get; set; }
-
-        [JsonProperty("vehicle")]
-        public Vehicle vehicle { get; set; }
-
-        [JsonProperty("alert")]
-        public object alert { get; set; }
-    }
-
-
-
-public class HomeController : Controller
+      
+    public class HomeController : Controller
     {
         public List<Location> lstLocations;
 
-        public HomeController()
+        public string Get_JSON_GTFS_Response(string apiURL)
         { 
-            lstLocations = new List<Location>();
-             
-            string apiURL = "https://gtfsapi.metrarail.com/gtfs/positions";
             string userName = "ddbb87512b3fc392b58a69c485ff8ce8";
             string password = "91b0f62e8049d0d51b35f27a494e5b46";
             string encoded = System.Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(userName + ":" + password));
-             
+
             CredentialCache credentialCache = new CredentialCache();
             credentialCache.Add(
                 new Uri(apiURL), "Basic", new NetworkCredential(userName, password)
@@ -162,36 +50,82 @@ public class HomeController : Controller
 
             WebRequest req = HttpWebRequest.Create(apiURL);
             req.Method = "GET";
-            req.Headers.Add("Authorization", "Basic " + encoded); 
+            req.Headers.Add("Authorization", "Basic " + encoded);
             req.Credentials = credentialCache;
-              
+
             WebResponse resp = req.GetResponse();
             Stream stream = resp.GetResponseStream();
             StreamReader sr = new StreamReader(stream);
             string output = sr.ReadToEnd();
 
-            List<RootObject> myobjList = JsonConvert.DeserializeObject<List<RootObject>>(output);
+            return output;
+        }
+
+        public HomeController()
+        { 
+            lstLocations = new List<Location>();
+              
+            string positionJSON = Get_JSON_GTFS_Response("https://gtfsapi.metrarail.com/gtfs/positions");
+            List<TripPosition> positionList = JsonConvert.DeserializeObject<List<TripPosition>>(positionJSON);
             
-            for (int i = 0; i < myobjList.Count; i++)
+            string tripUpdateJSON = Get_JSON_GTFS_Response("https://gtfsapi.metrarail.com/gtfs/tripUpdates");
+            List<TripUpdateCollection> tripUpdateList = JsonConvert.DeserializeObject<List<TripUpdateCollection>>(tripUpdateJSON);
+
+            for (int i = 0; i < positionList.Count; i++)
             {
-                Location loc = new Location
+                string tripID = positionList[i].vehicle.trip.trip_id;
+
+                //Routes that stop at Western Avenue station
+                if (
+                    (tripID.StartsWith("MD-N"))||
+                    (tripID.StartsWith("MD-W")) ||
+                    (tripID.StartsWith("NCS"))
+                    )
                 {
-                    LocationID = Convert.ToInt32(myobjList[i].id),
+                    string stopTimesJSON = Get_JSON_GTFS_Response("https://gtfsapi.metrarail.com/gtfs/schedule/stop_times/" + tripID);
 
-                    Title = myobjList[i].vehicle.trip.trip_id,
+                    TripUpdateCollection tuc = tripUpdateList.Where(x => x.id.Equals(tripID)).FirstOrDefault();
 
-                    Lat = myobjList[i].vehicle.position.latitude.ToString(),
+                    var tripDelay = tuc.trip_update.delay;
+                     
+                    List<StopOnTrip> stopsList = JsonConvert.DeserializeObject<List<StopOnTrip>>(stopTimesJSON);
 
-                    Long = myobjList[i].vehicle.position.longitude.ToString(),
+                    //if (!stopsList[0].stop_id.Equals("CUS")) //If DOES not start at Chicago Union Station = INBOUND
+                    if (stopsList[0].stop_id.Equals("CUS")) //If starts at Chicago Union Station = OUTBOUND
+                    {
+                        StopOnTrip westernAve = stopsList.Where(x => x.stop_id.Equals("WESTERNAVE")).FirstOrDefault();
 
-                    Address = myobjList[i].vehicle.trip.trip_id + Environment.NewLine
-                            + myobjList[i].vehicle.timestamp.low.ToLocalTime() + Environment.NewLine
-                            + "Trip started: " + myobjList[i].vehicle.trip.start_date + " " + myobjList[i].vehicle.trip.start_time,
+                        string arrivalTimeOnWestern = westernAve.arrival_time;
 
-                    ImagePath = "http://individual.icons-land.com/IconsPreview/Transport/PNG/RailTransport/48x48/SteamLocomotive__Black.png"
-                };
+                        string dateTimeString = positionList[i].vehicle.trip.start_date + " " + positionList[i].vehicle.trip.start_time;
 
-                lstLocations.Add(loc); 
+                        DateTime startDt = DateTime.ParseExact(dateTimeString,
+                                                "yyyyMMdd hh:mm:ss",
+                                                CultureInfo.InvariantCulture,
+                                                DateTimeStyles.None);
+
+                        string Delay = (tripDelay != null) ? Environment.NewLine + tripDelay.ToString() : null;
+
+                        Location loc = new Location
+                        {
+                            LocationID = Convert.ToInt32(positionList[i].id),
+
+                            TripID = tripID,
+
+                            Lat = positionList[i].vehicle.position.latitude.ToString(),
+
+                            Long = positionList[i].vehicle.position.longitude.ToString(),
+
+                            Description = positionList[i].vehicle.trip.trip_id + Environment.NewLine
+                                    + "Scheduled: " + arrivalTimeOnWestern + Delay,
+
+                            ImagePath = "https://png.icons8.com/material/2x/train.png"
+                        };
+
+                        lstLocations.Add(loc);
+                    }
+                  
+                }                
             }
         }
 
@@ -203,7 +137,7 @@ public class HomeController : Controller
         public JsonResult GetAllLocation()
         {
             
-            var v = lstLocations.OrderBy(a => a.Title).ToList();
+            var v = lstLocations.OrderBy(a => a.TripID).ToList();
             return new JsonResult
             {
                 Data = v,
