@@ -5,26 +5,30 @@
 <style> 
    pre.ng-binding 
    { 
-       background: mintcream;
+       /*background: mintcream;*/
    }
 </style>
-<div ng-app="myapp" ng-controller="mapsController" style="height: 600px" > 
+<div ng-app="myapp" ng-controller="mapsController" style="height: 600px; padding: 50px" > 
     <div style="float: left; width: 70%" class="maps">
+
+        <p><b>{{getDatetime | date:'MMM dd, yyyy HH:mm'}}</b></p>
         <!-- Add directive code (gmap directive) for show map and markers-->
-        <ui-gmap-google-map style="box-shadow:2px 2px 2px 2px lightgrey" center="map.center" zoom="map.zoom">
+        <ui-gmap-google-map style="box-shadow: 5px 10px 8px #888888" center="map.center" zoom="map.zoom">
             <ui-gmap-marker ng-repeat="marker in markers" coords="marker.coords" options="marker.options" 
                             events="marker.events"  icon="marker.icon" idkey="marker.id"> 
             </ui-gmap-marker>
+           
         </ui-gmap-google-map>
     </div>
     
     <!--It displays the markers links-->
-    <div style="float: left; width: 300px" class="locations">
+    <div style="float: left" class="locations">
         <p><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Routes</b></p>
         <ul>
             <li style="list-style-type: none;" ng-repeat="l in locations" ng-click="ShowLocation(l.LocationID)">
-                <div>
-                    <pre>{{l.Description}}</pre>
+                <div class="panel panel-success" >
+                    <pre><a ng-href="{{l.TripURL}}" target="_blank" >{{l.TripID}}</a>
+{{l.Description}}</pre>
                 </div>
             </li>
         </ul>

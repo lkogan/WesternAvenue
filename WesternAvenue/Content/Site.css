@@ -11,7 +11,7 @@
 
 .angular-google-map-container
 {
-    height: 600px !important;  
+    min-height: 600px !important;  
 }
  
 
@@ -36,7 +36,16 @@ box-shadow:2px 2px 3px 3px lightgrey;
 }    
 .angular-google-map 
 {    
-width: 80%;    
-height: 100%;    
-margin: auto 0px;    
+    width: 100%  !important;    
+    height: 100%;    
+    margin: auto 0px;    
 }    
+
+#footer {
+      position:fixed;
+    bottom:0px;
+    height:30px;
+    width:100%;
+    background-color:none;
+    color:white;
+}

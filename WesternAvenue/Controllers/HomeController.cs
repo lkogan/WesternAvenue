@@ -33,10 +33,14 @@ namespace WesternAvenue.Controllers
         public string ImagePath { get; set; }
 
         public string ScheduledTime { get; set; }
+
+        public string TripURL { get; set; }
     }
       
     public class HomeController : Controller
     {
+        private const string METRA_API_URL = "https://gtfsapi.metrarail.com/gtfs/";
+
         public List<Location> lstLocations;
 
         public string Get_JSON_GTFS_Response(string apiURL)
@@ -67,10 +71,10 @@ namespace WesternAvenue.Controllers
         { 
             lstLocations = new List<Location>();
 
-            string tripUpdateJSON = Get_JSON_GTFS_Response("https://gtfsapi.metrarail.com/gtfs/tripUpdates");
+            string tripUpdateJSON = Get_JSON_GTFS_Response(METRA_API_URL + "tripUpdates");
             List<TripUpdateCollection> tripUpdateList = JsonConvert.DeserializeObject<List<TripUpdateCollection>>(tripUpdateJSON);
             
-            string positionJSON = Get_JSON_GTFS_Response("https://gtfsapi.metrarail.com/gtfs/positions");
+            string positionJSON = Get_JSON_GTFS_Response(METRA_API_URL + "positions");
             List<TripPosition> positionList = JsonConvert.DeserializeObject<List<TripPosition>>(positionJSON);
 
             List<string> lstRoutesFilter = new List<string>();
@@ -86,39 +90,52 @@ namespace WesternAvenue.Controllers
             for (int i = 0; i < positionList.Count; i++)
             {
                 string tripID = positionList[i].vehicle.trip.trip_id;
-                 
-                string stopTimesJSON = Get_JSON_GTFS_Response("https://gtfsapi.metrarail.com/gtfs/schedule/stop_times/" + tripID);
+                
+                string routeID = positionList[i].vehicle.trip.route_id;
+
+                string stopTimesJSON = Get_JSON_GTFS_Response(METRA_API_URL + "schedule/stop_times/" + tripID);
+
+                string stationsJSON = Get_JSON_GTFS_Response(METRA_API_URL + "schedule/stops");  
+                List<Station> stationsList = JsonConvert.DeserializeObject<List<Station>>(stationsJSON);
+                Dictionary<string, string> dictStations = stationsList.ToDictionary(prop => prop.stop_id, prop => prop.stop_name);
 
                 TripUpdateCollection tuc = tripUpdateList.Where(x => x.id.Equals(tripID)).FirstOrDefault();
                 if (tuc == null) continue;
 
-                string lastStation = tuc.trip_update.stop_time_update[0].stop_id;
+                string lastStationAbbr = tuc.trip_update.stop_time_update[0].stop_id;
+                if ((lastStationAbbr.Equals("WESTERNAVE")) || (lastStationAbbr.Equals("CUS"))) continue;
 
                 int delayInSeconds = tuc.trip_update.stop_time_update[0].arrival.delay;
 
                 string Delay = string.Empty;
+                TimeSpan ts = new TimeSpan(0, 0, 0);
 
                 if (delayInSeconds > 0)
                 {
-                    TimeSpan ts = TimeSpan.FromSeconds(delayInSeconds);
+                    ts = TimeSpan.FromSeconds(delayInSeconds);
                     Delay = Environment.NewLine + (int)ts.TotalMinutes + " min late";
                 }
                
 
                 DateTime dtAtLastStation = tuc.trip_update.stop_time_update[0].departure.time.low;
                 DateTime adjDtAtLastStation = dtAtLastStation.Add(new TimeSpan(-6, 0, 0));
-                string timeAtLastStation = adjDtAtLastStation.ToString("HH:mm:ss");
+                string timeAtLastStation = adjDtAtLastStation.ToString("HH:mm");
   
-                List<StopOnTrip> stopsList = JsonConvert.DeserializeObject<List<StopOnTrip>>(stopTimesJSON);
-                if (stopsList == null) continue;
+                List<StopOnTrip> stopTimesList = JsonConvert.DeserializeObject<List<StopOnTrip>>(stopTimesJSON);
+                if (stopTimesList == null) continue;
 
-                if (!stopsList[0].stop_id.Equals("CUS"))    //INBOUND - DOES not start at Chicago Union Station
-                //if (stopsList[0].stop_id.Equals("CUS"))   //OUTBOUND - starts at Chicago Union Station
+                if (!stopTimesList[0].stop_id.Equals("CUS"))    //INBOUND - DOES not start at Chicago Union Station
                 {
-                    StopOnTrip westernAve = stopsList.Where(x => x.stop_id.Equals("WESTERNAVE")).FirstOrDefault();
+                    StopOnTrip westernAve = stopTimesList.Where(x => x.stop_id.Equals("WESTERNAVE")).FirstOrDefault();
                     if (westernAve == null) continue;
 
                     string arrivalTimeOnWestern = westernAve.arrival_time;
+                    DateTime dtArrivalTimeOnWestern = DateTime.ParseExact(arrivalTimeOnWestern,
+                        "H:m:s",
+                        CultureInfo.InvariantCulture,
+                        DateTimeStyles.None);
+
+                    dtArrivalTimeOnWestern = dtArrivalTimeOnWestern.Add(ts);
 
                     string dateTimeString = positionList[i].vehicle.trip.start_date + " " + positionList[i].vehicle.trip.start_time;
 
@@ -139,11 +156,12 @@ namespace WesternAvenue.Controllers
 
                         ScheduledTime = arrivalTimeOnWestern,
 
-                        Description = positionList[i].vehicle.trip.trip_id + Environment.NewLine
-                            + "Last Stop: " + lastStation + ", " + timeAtLastStation + Environment.NewLine
-                            + "Arrives at WESTERNAVE: " + arrivalTimeOnWestern + Delay, 
+                        Description = "Last Stop: " + dictStations[lastStationAbbr] + ", " + timeAtLastStation + Environment.NewLine
+                            + "Arrives at Western Ave: " + dtArrivalTimeOnWestern.ToString("HH:mm") + Delay, 
 
-                        ImagePath = "https://png.icons8.com/material/2x/train.png"
+                        ImagePath = "https://png.icons8.com/material/2x/train.png",
+
+                        TripURL = "https://metrarail.com/maps-schedules/train-lines/" + routeID + "/trip/" + tripID
                     };
 
                     lstLocations.Add(loc); 
