@@ -146,7 +146,9 @@ namespace WesternAvenue.Controllers
                                             CultureInfo.InvariantCulture,
                                             DateTimeStyles.None);
 
-                    TimeSpan tsArrivesIn = (DateTime)dtArrivalTimeOnWestern - DateTime.Now;
+                    DateTime dtUpdateTime = positionList[0].vehicle.timestamp.low;
+
+                    TimeSpan tsArrivesIn = (DateTime)dtArrivalTimeOnWestern - dtUpdateTime.Add(new TimeSpan(-6, 0, 0)); 
                     int arrivesInMinutes = (int)tsArrivesIn.TotalMinutes;
 
                     Location loc = new Location
