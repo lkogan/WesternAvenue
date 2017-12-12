@@ -32,7 +32,7 @@ namespace WesternAvenue.Controllers
 
         public string ImagePath { get; set; }
 
-        public string ScheduledTime { get; set; }
+        public DateTime ScheduledTime { get; set; }
 
         public string TripURL { get; set; }
     }
@@ -154,7 +154,7 @@ namespace WesternAvenue.Controllers
 
                         Long = positionList[i].vehicle.position.longitude.ToString(),
 
-                        ScheduledTime = arrivalTimeOnWestern,
+                        ScheduledTime = dtArrivalTimeOnWestern,
 
                         Description = "Last Stop: " + dictStations[lastStationAbbr] + ", " + timeAtLastStation + Environment.NewLine
                             + "Arrives at Western Ave: " + dtArrivalTimeOnWestern.ToString("HH:mm") + Delay, 
