@@ -10,8 +10,8 @@
 </style>
 <div ng-app="myapp" ng-controller="mapsController" style="height: 600px; padding: 50px" > 
     <!--It displays the markers links-->
-    <div style="float: left; margin-right: 50px" class="locations">
-        <p><b>Routes</b></p>
+    <div style="float: left; margin-right: 50px; width: 300px" class="locations">
+        <p><b>Routes - {{getDatetime | date:'MMM dd, yyyy HH:mm'}}</b></p>
         <ul>
             <li style="list-style-type: none;" ng-repeat="l in locations| orderBy: '-ScheduledTime' : true" ng-click="ShowLocation(l.LocationID)">
                 <div> 
@@ -22,7 +22,7 @@
         </ul>
     </div>
     <div style="float: left; width: 70%" class="maps">
-        <p><b>{{getDatetime | date:'MMM dd, yyyy HH:mm'}}</b></p>
+        <p></p>
         <!-- Add directive code (gmap directive) for show map and markers-->
         <ui-gmap-google-map style="box-shadow: 5px 10px 8px #888888" center="map.center" zoom="map.zoom">
             <ui-gmap-marker ng-repeat="marker in markers" coords="marker.coords" options="marker.options" 

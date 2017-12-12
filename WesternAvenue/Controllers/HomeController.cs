@@ -104,6 +104,8 @@ namespace WesternAvenue.Controllers
                 TripUpdateCollection tuc = tripUpdateList.Where(x => x.id.Equals(tripID)).FirstOrDefault();
                 if (tuc == null) continue;
 
+                //if (tuc.trip_update.stop_time_update.Count == 1) continue;
+
                 string lastStationAbbr = tuc.trip_update.stop_time_update[0].stop_id;
                 //if ((lastStationAbbr.Equals("WESTERNAVE")) || (lastStationAbbr.Equals("CUS"))) continue;
                 if (lastStationAbbr.Equals("CUS")) continue;
@@ -122,7 +124,7 @@ namespace WesternAvenue.Controllers
 
                 DateTime dtAtLastStation = tuc.trip_update.stop_time_update[0].departure.time.low;
                 DateTime adjDtAtLastStation = dtAtLastStation.Add(new TimeSpan(-6, 0, 0));
-                string timeAtLastStation = adjDtAtLastStation.ToString("HH:mm");
+                string timeAtNextStation = adjDtAtLastStation.ToString("HH:mm");
   
                 List<StopOnTrip> stopTimesList = JsonConvert.DeserializeObject<List<StopOnTrip>>(stopTimesJSON);
                 if (stopTimesList == null) continue;
@@ -152,6 +154,20 @@ namespace WesternAvenue.Controllers
                     TimeSpan tsArrivesIn = (DateTime)dtArrivalTimeOnWestern - dtUpdateTime.Add(new TimeSpan(-6, 0, 0)); 
                     int arrivesInMinutes = (int)tsArrivesIn.TotalMinutes;
 
+                    arrivalTimeOnWestern = dtArrivalTimeOnWestern.ToString("HH:mm");
+                    string currentNextStop = dictStations[lastStationAbbr];
+
+                    string description = string.Empty;
+                    if ((currentNextStop.Equals("Western Ave")) && (arrivalTimeOnWestern.Equals(timeAtNextStation)))
+                    {
+                        description = "Arriving at Western Ave: " + dtArrivalTimeOnWestern.ToString("HH:mm") + Delay;
+                    }
+                    else
+                    {
+                        description = "Arrives at Western Ave: " + dtArrivalTimeOnWestern.ToString("HH:mm") + Delay + Environment.NewLine +
+                            "Next Stop: " + dictStations[lastStationAbbr] + ", " + timeAtNextStation;
+                    }
+
                     Location loc = new Location
                     {
                         LocationID = Convert.ToInt32(positionList[i].id),
@@ -166,8 +182,7 @@ namespace WesternAvenue.Controllers
 
                         ScheduledTime = dtArrivalTimeOnWestern,
 
-                        Description = "Arrives at Western Ave: " + dtArrivalTimeOnWestern.ToString("HH:mm") + Delay + Environment.NewLine +
-                        "Last Stop: " + dictStations[lastStationAbbr] + ", " + timeAtLastStation, 
+                        Description = description, 
 
                         ImagePath = "https://png.icons8.com/material/2x/train.png",
 
