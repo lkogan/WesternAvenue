@@ -1,8 +1,16 @@
 ﻿(function () {
     'use strict';
-
+     
     var app = angular.module('myapp', ['uiGmapgoogle-maps']); //dependency we should add to angular application  
       
+    app.config(function (uiGmapGoogleMapApiProvider) {
+        uiGmapGoogleMapApiProvider.configure({
+            key: 'AIzaSyD-K8_caJKWfha8kMTjpGEq6hW3LnZx7FI',
+            v: '3.17',
+            libraries: 'weather,geometry,visualization'
+        });
+    })
+
     app.controller('mapsController', function ($scope, $http, $timeout)
     { 
         angular.element(document).ready(function () { 
