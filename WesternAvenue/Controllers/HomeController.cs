@@ -105,7 +105,8 @@ namespace WesternAvenue.Controllers
                 if (tuc == null) continue;
 
                 string lastStationAbbr = tuc.trip_update.stop_time_update[0].stop_id;
-                if ((lastStationAbbr.Equals("WESTERNAVE")) || (lastStationAbbr.Equals("CUS"))) continue;
+                //if ((lastStationAbbr.Equals("WESTERNAVE")) || (lastStationAbbr.Equals("CUS"))) continue;
+                if (lastStationAbbr.Equals("CUS")) continue;
 
                 int delayInSeconds = tuc.trip_update.stop_time_update[0].arrival.delay;
 
