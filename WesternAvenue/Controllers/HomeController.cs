@@ -35,6 +35,8 @@ namespace WesternAvenue.Controllers
         public DateTime ScheduledTime { get; set; }
 
         public string TripURL { get; set; }
+
+        public string ArrivesIn { get; set; }
     }
       
     public class HomeController : Controller
@@ -143,7 +145,10 @@ namespace WesternAvenue.Controllers
                                             "yyyyMMdd HH:mm:ss",
                                             CultureInfo.InvariantCulture,
                                             DateTimeStyles.None);
- 
+
+                    TimeSpan tsArrivesIn = (DateTime)dtArrivalTimeOnWestern - DateTime.Now;
+                    int arrivesInMinutes = (int)tsArrivesIn.TotalMinutes;
+
                     Location loc = new Location
                     {
                         LocationID = Convert.ToInt32(positionList[i].id),
@@ -154,10 +159,12 @@ namespace WesternAvenue.Controllers
 
                         Long = positionList[i].vehicle.position.longitude.ToString(),
 
+                        ArrivesIn = arrivesInMinutes + " min",
+
                         ScheduledTime = dtArrivalTimeOnWestern,
 
-                        Description = "Last Stop: " + dictStations[lastStationAbbr] + ", " + timeAtLastStation + Environment.NewLine
-                            + "Arrives at Western Ave: " + dtArrivalTimeOnWestern.ToString("HH:mm") + Delay, 
+                        Description = "Arrives at Western Ave: " + dtArrivalTimeOnWestern.ToString("HH:mm") + Delay + Environment.NewLine +
+                        "Last Stop: " + dictStations[lastStationAbbr] + ", " + timeAtLastStation, 
 
                         ImagePath = "https://png.icons8.com/material/2x/train.png",
 
