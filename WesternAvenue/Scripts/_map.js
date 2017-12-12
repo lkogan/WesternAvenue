@@ -24,10 +24,10 @@
           {
               center:
               {
-                  latitude: 41.902243, 
-                  longitude: -87.703288
+                  latitude: 41.916886,
+                  longitude: -87.766977
               },
-              zoom: 14
+              zoom: 13
           }
         $scope.markers = [];
         $scope.locations = [];
