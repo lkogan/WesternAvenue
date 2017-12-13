@@ -13,7 +13,7 @@ namespace WesternAvenue.Controllers
     {
         private WesternAvenueModels Model = new WesternAvenueModels();
 
-        private List<Location> lstLocations;
+        private static List<Location> lstLocations;
          
         public HomeController()
         {
