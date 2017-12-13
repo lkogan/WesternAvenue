@@ -89,6 +89,9 @@ namespace WesternAvenue.Controllers
                 .Where(a => lstRoutesFilter.Any(b => a.vehicle.trip.trip_id.StartsWith(b)))
                 .ToList();
 
+            var CsTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time");
+            DateTime CsTime = TimeZoneInfo.ConvertTime(DateTime.Now, TimeZoneInfo.Local, CsTimeZone);
+
             for (int i = 0; i < positionList.Count; i++)
             {
                 string tripID = positionList[i].vehicle.trip.trip_id;
@@ -148,11 +151,8 @@ namespace WesternAvenue.Controllers
                                             "yyyyMMdd HH:mm:ss",
                                             CultureInfo.InvariantCulture,
                                             DateTimeStyles.None);
-
-                    DateTime dtUpdateTime = tuc.trip_update.timestamp.low.Add(new TimeSpan(-6, 0, 0));
-
-
-                    TimeSpan tsArrivesIn = dtArrivalTimeOnWestern - dtUpdateTime; 
+                      
+                    TimeSpan tsArrivesIn = dtArrivalTimeOnWestern - CsTime;
                     int arrivesInMinutes = (int)tsArrivesIn.TotalMinutes;
                     if (arrivesInMinutes < 0)
                     {
