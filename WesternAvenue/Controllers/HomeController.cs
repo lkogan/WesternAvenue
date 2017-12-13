@@ -129,7 +129,7 @@ namespace WesternAvenue.Controllers
                 List<StopOnTrip> stopTimesList = JsonConvert.DeserializeObject<List<StopOnTrip>>(stopTimesJSON);
                 if (stopTimesList == null) continue;
 
-                if (!stopTimesList[0].stop_id.Equals("CUS"))    //INBOUND - DOES not start at Chicago Union Station
+                if (!stopTimesList[0].stop_id.Equals("CUS"))    //INBOUND - DOES NOT start at Chicago Union Station
                 {
                     StopOnTrip westernAve = stopTimesList.Where(x => x.stop_id.Equals("WESTERNAVE")).FirstOrDefault();
                     if (westernAve == null) continue;
@@ -149,10 +149,15 @@ namespace WesternAvenue.Controllers
                                             CultureInfo.InvariantCulture,
                                             DateTimeStyles.None);
 
-                    DateTime dtUpdateTime = positionList[0].vehicle.timestamp.low;
+                    DateTime dtUpdateTime = tuc.trip_update.timestamp.low.Add(new TimeSpan(-6, 0, 0));
 
-                    TimeSpan tsArrivesIn = (DateTime)dtArrivalTimeOnWestern - dtUpdateTime.Add(new TimeSpan(-6, 0, 0)); 
+
+                    TimeSpan tsArrivesIn = dtArrivalTimeOnWestern - dtUpdateTime; 
                     int arrivesInMinutes = (int)tsArrivesIn.TotalMinutes;
+                    if (arrivesInMinutes < 0)
+                    {
+                        arrivesInMinutes = 0;
+                    }
 
                     arrivalTimeOnWestern = dtArrivalTimeOnWestern.ToString("HH:mm");
                     string currentNextStop = dictStations[lastStationAbbr];

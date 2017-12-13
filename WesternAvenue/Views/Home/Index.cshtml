@@ -10,7 +10,7 @@
 </style>
 <div ng-app="myapp" ng-controller="mapsController" style="height: 600px; padding: 50px" > 
     <!--It displays the markers links-->
-    <div style="float: left; margin-right: 50px; width: 250px" class="locations">
+    <div style="float: left; margin-right: 50px; width: 280px" class="locations">
         <p><b>Routes - {{getDatetime | date:'MMM dd, yyyy HH:mm'}}</b></p>
         <ul>
             <li style="list-style-type: none;" ng-repeat="l in locations| orderBy: '-ScheduledTime' : true" ng-click="ShowLocation(l.LocationID)">
