@@ -151,8 +151,9 @@ namespace WesternAvenue.Controllers
                                             "yyyyMMdd HH:mm:ss",
                                             CultureInfo.InvariantCulture,
                                             DateTimeStyles.None);
-                      
-                    TimeSpan tsArrivesIn = dtArrivalTimeOnWestern - CsTime;
+
+                    DateTime dt = tuc.trip_update.timestamp.low.Add(new TimeSpan(-6, 0, 0)); 
+                    TimeSpan tsArrivesIn = dtArrivalTimeOnWestern.Subtract(dt);
                     int arrivesInMinutes = (int)tsArrivesIn.TotalMinutes;
                     if (arrivesInMinutes < 0)
                     {
@@ -196,11 +197,7 @@ namespace WesternAvenue.Controllers
 
                     lstLocations.Add(loc); 
                 } 
-            }
-
-
-            //Sort by start time
-            lstLocations = lstLocations.OrderBy(x => x.ScheduledTime).ToList(); 
+            } 
         }
 
         public ActionResult Index()
