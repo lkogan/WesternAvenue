@@ -7,6 +7,7 @@ using System.Web;
 using static WesternAvenue.Models.AuxModels;
 using static WesternAvenue.Models.TripPositionModels;
 using static WesternAvenue.Models.TripUpdateModels;
+using j = WesternAvenue.Models.JSON_Models;
 
 namespace WesternAvenue.Models
 {
@@ -38,10 +39,10 @@ namespace WesternAvenue.Models
         {
             List<Location> lstLocations = new List<Location>();
 
-            string tripUpdateJSON = JSON_Models.Get_GTFS_Response(JSON_Models.METRA_API_URL + "tripUpdates");
+            string tripUpdateJSON = j.Get_GTFS_Response(j.METRA_API_URL + "tripUpdates");
             List<TripUpdateCollection> tripUpdateList = JsonConvert.DeserializeObject<List<TripUpdateCollection>>(tripUpdateJSON);
 
-            string positionJSON = JSON_Models.Get_GTFS_Response(JSON_Models.METRA_API_URL + "positions");
+            string positionJSON = j.Get_GTFS_Response(j.METRA_API_URL + "positions");
             List<TripPosition> positionList = JsonConvert.DeserializeObject<List<TripPosition>>(positionJSON);
 
             List<string> lstRoutesFilter = new List<string>();
@@ -60,19 +61,17 @@ namespace WesternAvenue.Models
 
                 string routeID = positionList[i].vehicle.trip.route_id;
 
-                string stopTimesJSON = JSON_Models.Get_GTFS_Response(JSON_Models.METRA_API_URL + "schedule/stop_times/" + tripID);
+                string stopTimesJSON = j.Get_GTFS_Response(j.METRA_API_URL + "schedule/stop_times/" + tripID);
 
-                string stationsJSON = JSON_Models.Get_GTFS_Response(JSON_Models.METRA_API_URL + "schedule/stops");
+                string stationsJSON = j.Get_GTFS_Response(j.METRA_API_URL + "schedule/stops");
                 List<Station> stationsList = JsonConvert.DeserializeObject<List<Station>>(stationsJSON);
                 Dictionary<string, string> dictStations = stationsList.ToDictionary(prop => prop.stop_id, prop => prop.stop_name);
 
                 TripUpdateCollection tuc = tripUpdateList.Where(x => x.id.Equals(tripID)).FirstOrDefault();
-                if (tuc == null) continue;
-
-                //if (tuc.trip_update.stop_time_update.Count == 1) continue;
+                if (tuc == null) continue; 
 
                 string lastStationAbbr = tuc.trip_update.stop_time_update[0].stop_id;
-                //if ((lastStationAbbr.Equals("WESTERNAVE")) || (lastStationAbbr.Equals("CUS"))) continue;
+
                 if (lastStationAbbr.Equals("CUS")) continue;
 
                 int delayInSeconds = tuc.trip_update.stop_time_update[0].arrival.delay;
@@ -85,8 +84,7 @@ namespace WesternAvenue.Models
                     ts = TimeSpan.FromSeconds(delayInSeconds);
                     Delay = Environment.NewLine + (int)ts.TotalMinutes + " min late";
                 }
-
-
+                  
                 DateTime dtAtLastStation = tuc.trip_update.stop_time_update[0].departure.time.low;
                 DateTime adjDtAtLastStation = dtAtLastStation.Add(new TimeSpan(-6, 0, 0));
                 string timeAtNextStation = adjDtAtLastStation.ToString("HH:mm");

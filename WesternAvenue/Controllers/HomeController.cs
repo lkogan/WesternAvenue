@@ -12,12 +12,12 @@ namespace WesternAvenue.Controllers
     public class HomeController : Controller
     {
         private WesternAvenueModels Model = new WesternAvenueModels();
-        
-        public List<Location> lstLocations;
+
+        private List<Location> lstLocations;
          
         public HomeController()
         {
-            lstLocations = Model.GetRoutesOnTheWayToWesternAvenue();
+            
         }
 
         public ActionResult Index()
@@ -26,7 +26,9 @@ namespace WesternAvenue.Controllers
         }
 
         public JsonResult GetAllLocation()
-        {  
+        {
+            lstLocations = Model.GetRoutesOnTheWayToWesternAvenue();
+
             return new JsonResult
             {
                 Data = lstLocations,
@@ -34,10 +36,9 @@ namespace WesternAvenue.Controllers
             }; 
         }
 
-        //This method gets the markers info from database.  
+        //This method get data for specific marker
         public JsonResult GetMarkerData(int locationID)
-        {
-            
+        { 
             Location l = null;
             l = lstLocations.Where(a => a.LocationID.Equals(locationID)).FirstOrDefault();
 
@@ -45,9 +46,9 @@ namespace WesternAvenue.Controllers
             {
                 Data = l,
                 JsonRequestBehavior = JsonRequestBehavior.AllowGet
-            };
-             
+            }; 
         }
+
         public ActionResult About()
         {
             ViewBag.Message = "Your application description page.";
