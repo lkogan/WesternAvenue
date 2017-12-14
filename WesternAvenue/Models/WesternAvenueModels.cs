@@ -25,7 +25,7 @@ namespace WesternAvenue.Models
 
         public string ImagePath { get; set; }
 
-        public DateTime ScheduledTime { get; set; }
+        public string ArrivalTime { get; set; }
 
         public string TripURL { get; set; }
 
@@ -45,12 +45,12 @@ namespace WesternAvenue.Models
             string positionJSON = j.Get_GTFS_Response(j.METRA_API_URL + "positions");
             List<TripPosition> positionList = JsonConvert.DeserializeObject<List<TripPosition>>(positionJSON);
 
+            //Filter positions to contain only routes that stop at Western Avenue
             List<string> lstRoutesFilter = new List<string>();
             lstRoutesFilter.Add("MD-N");
             lstRoutesFilter.Add("MD-W");
             lstRoutesFilter.Add("NCS");
-
-            //Filter positions to contain only routes that stop at Western Avenue
+             
             positionList = positionList
                 .Where(a => lstRoutesFilter.Any(b => a.vehicle.trip.trip_id.StartsWith(b)))
                 .ToList();
@@ -58,11 +58,9 @@ namespace WesternAvenue.Models
             for (int i = 0; i < positionList.Count; i++)
             {
                 string tripID = positionList[i].vehicle.trip.trip_id;
+                string routeID = positionList[i].vehicle.trip.route_id;                
 
-                string routeID = positionList[i].vehicle.trip.route_id;
-
-                string stopTimesJSON = j.Get_GTFS_Response(j.METRA_API_URL + "schedule/stop_times/" + tripID);
-
+                //Create dictionary to resolve station abbrevs to names
                 string stationsJSON = j.Get_GTFS_Response(j.METRA_API_URL + "schedule/stops");
                 List<Station> stationsList = JsonConvert.DeserializeObject<List<Station>>(stationsJSON);
                 Dictionary<string, string> dictStations = stationsList.ToDictionary(prop => prop.stop_id, prop => prop.stop_name);
@@ -71,7 +69,6 @@ namespace WesternAvenue.Models
                 if (tuc == null) continue; 
 
                 string lastStationAbbr = tuc.trip_update.stop_time_update[0].stop_id;
-
                 if (lastStationAbbr.Equals("CUS")) continue;
 
                 int delayInSeconds = tuc.trip_update.stop_time_update[0].arrival.delay;
@@ -82,13 +79,14 @@ namespace WesternAvenue.Models
                 if (delayInSeconds > 0)
                 {
                     ts = TimeSpan.FromSeconds(delayInSeconds);
-                    Delay = Environment.NewLine + (int)ts.TotalMinutes + " min late";
+                    Delay = (int)ts.TotalMinutes + " min late" + Environment.NewLine;
                 }
                   
                 DateTime dtAtLastStation = tuc.trip_update.stop_time_update[0].departure.time.low;
                 DateTime adjDtAtLastStation = dtAtLastStation.Add(new TimeSpan(-6, 0, 0));
                 string timeAtNextStation = adjDtAtLastStation.ToString("HH:mm");
 
+                string stopTimesJSON = j.Get_GTFS_Response(j.METRA_API_URL + "schedule/stop_times/" + tripID);
                 List<StopOnTrip> stopTimesList = JsonConvert.DeserializeObject<List<StopOnTrip>>(stopTimesJSON);
                 if (stopTimesList == null) continue;
 
@@ -117,17 +115,23 @@ namespace WesternAvenue.Models
                     TimeSpan tsArrivesIn = (DateTime)dtArrivalTimeOnWestern - dtUpdateTime.Add(new TimeSpan(-6, 0, 0));
                     int arrivesInMinutes = (int)tsArrivesIn.TotalMinutes;
 
+                    //Bug on server - after 6pm, 24 hrs gets added to the time. Observed only on server, works fine locally
+                    if (arrivesInMinutes > 1440)
+                    {
+                        arrivesInMinutes = arrivesInMinutes - 1440;
+                    }
+
                     arrivalTimeOnWestern = dtArrivalTimeOnWestern.ToString("HH:mm");
                     string currentNextStop = dictStations[lastStationAbbr];
 
                     string description = string.Empty;
                     if ((currentNextStop.Equals("Western Ave")) && (arrivalTimeOnWestern.Equals(timeAtNextStation)))
                     {
-                        description = "Arriving at Western Ave: " + dtArrivalTimeOnWestern.ToString("HH:mm") + Delay;
+                        description = Delay;
                     }
                     else
                     {
-                        description = "Arrives at Western Ave: " + dtArrivalTimeOnWestern.ToString("HH:mm") + Delay + Environment.NewLine +
+                        description = Delay + 
                             "Next Stop: " + dictStations[lastStationAbbr] + ", " + timeAtNextStation;
                     }
 
@@ -145,7 +149,7 @@ namespace WesternAvenue.Models
 
                         ArrivesIn = arrivesInMinutes + " min",
 
-                        ScheduledTime = dtArrivalTimeOnWestern,
+                        ArrivalTime = dtArrivalTimeOnWestern.ToString("HH:mm"),
 
                         Description = description,
 
@@ -157,11 +161,7 @@ namespace WesternAvenue.Models
                     lstLocations.Add(loc);
                 }
             }
-
-
-            //Sort by start time
-            lstLocations = lstLocations.OrderBy(x => x.ScheduledTime).ToList();
-
+              
             return lstLocations;
         }
     }

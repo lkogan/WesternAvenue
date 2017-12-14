@@ -13,7 +13,7 @@ namespace WesternAvenue.Controllers
     {
         private WesternAvenueModels Model = new WesternAvenueModels();
 
-        private static List<Location> lstLocations;
+        private static List<Location> RoutesData;
          
         public HomeController()
         {
@@ -27,11 +27,11 @@ namespace WesternAvenue.Controllers
 
         public JsonResult GetAllLocation()
         {
-            lstLocations = Model.GetRoutesOnTheWayToWesternAvenue();
+            RoutesData = Model.GetRoutesOnTheWayToWesternAvenue();
 
             return new JsonResult
             {
-                Data = lstLocations,
+                Data = RoutesData,
                 JsonRequestBehavior = JsonRequestBehavior.AllowGet
             }; 
         }
@@ -40,7 +40,7 @@ namespace WesternAvenue.Controllers
         public JsonResult GetMarkerData(int locationID)
         { 
             Location l = null;
-            l = lstLocations.Where(a => a.LocationID.Equals(locationID)).FirstOrDefault();
+            l = RoutesData.Where(a => a.LocationID.Equals(locationID)).FirstOrDefault();
 
             return new JsonResult
             {

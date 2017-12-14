@@ -11,11 +11,12 @@
 <div ng-app="myapp" ng-controller="mapsController" style="height: 600px; padding: 25px" > 
     <!--It displays the markers links-->
     <div style="float: left; width: 270px; margin-right: 20px" class="locations">
-        <p><b>Routes - {{getDatetime | date:'MMM dd, yyyy HH:mm'}}</b></p>
+        <p><b>{{getDatetime | date:'MMM dd, yyyy HH:mm'}}</b></p>
+        <p><b>Western Avenue Metra Station</b></p>
         <ul>
-            <li style="list-style-type: none;" ng-repeat="l in locations| orderBy: '-ScheduledTime' : true" ng-click="ShowLocation(l.LocationID)">
-                <div> 
-                    <pre class="panel panel-primary"><a style="font: bold 24pt/80% Arial; text-decoration: none;">{{l.ArrivesIn}}</a><br /><a ng-href="{{l.TripURL}}" target="_blank">{{l.TripID}}</a>
+            <li style="list-style-type: none;" ng-repeat="l in locations| orderBy: '-ArrivalTime' : true" ng-click="ShowLocation(l.LocationID)">
+                <div>
+                    <pre class="panel panel-primary"><a style="font: bold 24pt/80% Arial; text-decoration: none;">{{l.ArrivesIn}}</a><a style="margin-left: 80px; font: bold 18pt/80% Arial; color: black; text-decoration: none;">{{l.ArrivalTime}}</a><br /><a ng-href="{{l.TripURL}}" target="_blank">{{l.TripID}}</a>
 {{l.Description}}</pre>
                 </div>
             </li>
