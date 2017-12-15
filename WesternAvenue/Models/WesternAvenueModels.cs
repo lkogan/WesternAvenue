@@ -55,6 +55,8 @@ namespace WesternAvenue.Models
                 .Where(a => lstRoutesFilter.Any(b => a.vehicle.trip.trip_id.StartsWith(b)))
                 .ToList();
 
+            TimeZoneInfo cstZone = TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time");
+           
             for (int i = 0; i < positionList.Count; i++)
             {
                 string tripID = positionList[i].vehicle.trip.trip_id;
@@ -83,7 +85,11 @@ namespace WesternAvenue.Models
                 }
                   
                 DateTime dtAtLastStation = tuc.trip_update.stop_time_update[0].departure.time.low;
-                DateTime adjDtAtLastStation = dtAtLastStation.Add(new TimeSpan(-6, 0, 0));
+
+
+                DateTime adjDtAtLastStation = TimeZoneInfo.ConvertTimeFromUtc(dtAtLastStation, cstZone);
+
+                //DateTime adjDtAtLastStation = dtAtLastStation.Add(new TimeSpan(-6, 0, 0));
                 string timeAtNextStation = adjDtAtLastStation.ToString("HH:mm");
 
                 string stopTimesJSON = j.Get_GTFS_Response(j.METRA_API_URL + "schedule/stop_times/" + tripID);
@@ -111,8 +117,9 @@ namespace WesternAvenue.Models
                                             DateTimeStyles.None);
 
                     DateTime dtUpdateTime = positionList[0].vehicle.timestamp.low;
+                    dtUpdateTime = TimeZoneInfo.ConvertTimeFromUtc(dtUpdateTime, cstZone);
 
-                    TimeSpan tsArrivesIn = (DateTime)dtArrivalTimeOnWestern - dtUpdateTime.Add(new TimeSpan(-6, 0, 0));
+                    TimeSpan tsArrivesIn = dtArrivalTimeOnWestern.Subtract(dtUpdateTime);
                     int arrivesInMinutes = (int)tsArrivesIn.TotalMinutes;
 
                     //Bug on server - after 6pm, 24 hrs gets added to the time. Observed only on server, works fine locally
