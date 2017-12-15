@@ -116,7 +116,7 @@ namespace WesternAvenue.Models
                     int arrivesInMinutes = (int)tsArrivesIn.TotalMinutes;
 
                     //Bug on server - after 6pm, 24 hrs gets added to the time. Observed only on server, works fine locally
-                    if (arrivesInMinutes > 1440)
+                    if (arrivesInMinutes >= 1440)
                     {
                         arrivesInMinutes = arrivesInMinutes - 1440;
                     }
