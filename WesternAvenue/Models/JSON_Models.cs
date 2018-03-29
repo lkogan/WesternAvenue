@@ -11,6 +11,7 @@ namespace WesternAvenue.Models
     public static class JSON_Models
     {
         public static string METRA_API_URL = "https://gtfsapi.metrarail.com/gtfs/";
+        public static string CURRENT_TIME_API_URL = "http://api.timezonedb.com/v2/get-time-zone?key=L5MBICGPGIXC&format=json&by=zone&zone=America/Chicago";
 
         public static string Get_GTFS_Response(string apiURL)
         {
@@ -36,5 +37,18 @@ namespace WesternAvenue.Models
             return output;
         }
 
+        public static string Get_API_Response(string apiURL)
+        {
+            WebRequest req = HttpWebRequest.Create(apiURL);
+            req.Method = "GET"; 
+            req.ContentType = "application/json; charset=utf-8";
+
+            WebResponse resp = req.GetResponse();
+            Stream stream = resp.GetResponseStream();
+            StreamReader sr = new StreamReader(stream);
+            string output = sr.ReadToEnd();
+
+            return output;
+        }
     }
 }

@@ -54,9 +54,7 @@ namespace WesternAvenue.Models
             positionList = positionList
                 .Where(a => lstRoutesFilter.Any(b => a.vehicle.trip.trip_id.StartsWith(b)))
                 .ToList();
-
-            TimeZoneInfo cstZone = TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time");
-           
+ 
             for (int i = 0; i < positionList.Count; i++)
             {
                 string tripID = positionList[i].vehicle.trip.trip_id;
@@ -83,14 +81,10 @@ namespace WesternAvenue.Models
                     ts = TimeSpan.FromSeconds(delayInSeconds);
                     Delay = (int)ts.TotalMinutes + " min late" + Environment.NewLine;
                 }
-                  
+                 
                 DateTime dtAtLastStation = tuc.trip_update.stop_time_update[0].departure.time.low;
-
-
-                DateTime adjDtAtLastStation = TimeZoneInfo.ConvertTimeFromUtc(dtAtLastStation, cstZone);
-
-                //DateTime adjDtAtLastStation = dtAtLastStation.Add(new TimeSpan(-6, 0, 0));
-                string timeAtNextStation = adjDtAtLastStation.ToString("HH:mm");
+                  
+                string timeAtNextStation = dtAtLastStation.ToString("HH:mm");
 
                 string stopTimesJSON = j.Get_GTFS_Response(j.METRA_API_URL + "schedule/stop_times/" + tripID);
                 List<StopOnTrip> stopTimesList = JsonConvert.DeserializeObject<List<StopOnTrip>>(stopTimesJSON);
@@ -115,19 +109,15 @@ namespace WesternAvenue.Models
                                             "yyyyMMdd HH:mm:ss",
                                             CultureInfo.InvariantCulture,
                                             DateTimeStyles.None);
-
-                    DateTime dtUpdateTime = positionList[0].vehicle.timestamp.low;
-                    dtUpdateTime = TimeZoneInfo.ConvertTimeFromUtc(dtUpdateTime, cstZone);
+                     
+                    string currentDateTimeJSON = j.Get_API_Response(j.CURRENT_TIME_API_URL);
+                    DateTimeModels currentDateTime = JsonConvert.DeserializeObject<DateTimeModels>(currentDateTimeJSON);
+                    
+                    DateTime dtUpdateTime = DateTime.Parse(currentDateTime.formatted);
 
                     TimeSpan tsArrivesIn = dtArrivalTimeOnWestern.Subtract(dtUpdateTime);
                     int arrivesInMinutes = (int)tsArrivesIn.TotalMinutes;
-
-                    //Bug on server - after 6pm, 24 hrs gets added to the time.
-                    if (arrivesInMinutes >= 1440)
-                    {
-                        arrivesInMinutes = arrivesInMinutes - 1440;
-                    }
-
+                     
                     arrivalTimeOnWestern = dtArrivalTimeOnWestern.ToString("HH:mm");
                     string currentNextStop = dictStations[lastStationAbbr];
 

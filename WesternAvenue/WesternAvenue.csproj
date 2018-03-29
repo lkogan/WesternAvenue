@@ -193,6 +193,7 @@
     </Compile>
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\AuxModels.cs" />
+    <Compile Include="Models\DateTimeModels.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\JSON_Models.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
