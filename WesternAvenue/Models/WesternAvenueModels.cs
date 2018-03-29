@@ -122,7 +122,7 @@ namespace WesternAvenue.Models
                     TimeSpan tsArrivesIn = dtArrivalTimeOnWestern.Subtract(dtUpdateTime);
                     int arrivesInMinutes = (int)tsArrivesIn.TotalMinutes;
 
-                    //Bug on server - after 6pm, 24 hrs gets added to the time. Observed only on server, works fine locally
+                    //Bug on server - after 6pm, 24 hrs gets added to the time.
                     if (arrivesInMinutes >= 1440)
                     {
                         arrivesInMinutes = arrivesInMinutes - 1440;

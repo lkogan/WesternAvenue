@@ -9,7 +9,9 @@
    }
 </style>
 <div ng-app="myapp" ng-controller="mapsController" style="height: 600px; padding: 25px" > 
-    <div style="float: left; width: 70%; min-width: 280px" class="maps">
+    <div style="float: left; width: 70%; min-width: 280px;" class="maps">
+        <p><b>{{getDatetime | date:'MMM dd, yyyy HH:mm'}}</b></p>
+        <p><b>Western Avenue Metra Station</b></p>
         <p></p>
         <!-- Add directive code (gmap directive) for show map and markers-->
         <ui-gmap-google-map style="box-shadow: 5px 10px 8px #888888" center="map.center" zoom="map.zoom">
@@ -18,9 +20,8 @@
             </ui-gmap-marker>
         </ui-gmap-google-map>
     </div> 
-    <div style="float: left; width: 270px; margin-left: 20px" class="locations">
-        <p><b>{{getDatetime | date:'MMM dd, yyyy HH:mm'}}</b></p>
-        <p><b>Western Avenue Metra Station</b></p>
+    <div style="float: left; width: 270px; margin-left: 10px" class="locations">
+        <br />
         <ul>
             <li style="list-style-type: none;" ng-repeat="l in locations| orderBy: '-ArrivalTime' : true" ng-click="ShowLocation(l.LocationID)">
                 <div>

@@ -29,11 +29,12 @@ select,
 textarea {
     max-width: 280px;
 }
-
+ 
 .angular-google-map-container
 {    
-height: 300px;    
-box-shadow:2px 2px 3px 3px lightgrey;    
+    height: 200px;   
+    min-height: 200px !important; 
+    box-shadow:2px 2px 3px 3px lightgrey;    
 }    
 .angular-google-map 
 {    

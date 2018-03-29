@@ -10,7 +10,7 @@
             libraries: 'weather,geometry,visualization'
         });
     })
-
+    
     app.controller('mapsController', function ($scope, $http, $timeout)
     { 
         angular.element(document).ready(function () { 
@@ -20,15 +20,17 @@
          
         //this is default coordinates for the map when it loads for first time  
         //Location is close to Western Avenue Metra station
+       
         $scope.map =
-          {
-              center:
-              {
-                  latitude: 41.916886,
-                  longitude: -87.766977
-              },
-              zoom: 15
-          }
+        {
+            center:
+            {
+                latitude: 41.916886,
+                longitude: -87.766977
+            },
+            zoom: 15
+        }
+
         $scope.markers = [];
         $scope.locations = [];
         $scope.getDatetime = new Date();
@@ -68,8 +70,7 @@
                     //set map focus to center  
                     $scope.map.center.latitude = firstRecord.Lat;
                     $scope.map.center.longitude = firstRecord.Long;
-
-                }
+                } 
                 
 
 
