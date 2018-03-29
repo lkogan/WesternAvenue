@@ -67,9 +67,16 @@
                             icon: firstRecord.ImagePath //image --optional  
                         });
 
-                    //set map focus to center  
-                    $scope.map.center.latitude = firstRecord.Lat;
-                    $scope.map.center.longitude = firstRecord.Long;
+                    //set map focus to center
+                    $scope.map =
+                    {
+                        center:
+                        {
+                            latitude: firstRecord.Lat,
+                            longitude: firstRecord.Long
+                        },
+                        zoom: 15
+                    }
                 } 
                 
 
