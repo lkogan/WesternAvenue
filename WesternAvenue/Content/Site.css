@@ -74,12 +74,22 @@ ul
 	padding: 0;
 }
 
-.gm-style-cc
+/*Google copyright info on the bottom*/
+.gm-style-cc 
 {
 	visibility: hidden !important;
 }
 
+/*Map style buttons (roadmap/terrain*/
 .gm-style-mtc
 {
- visibility: hidden !important;
+    visibility: hidden !important;
 }
+
+/*Zoom buttons - .gmnoprint*/
+
+/*StreetView Icon*/
+.gm-svpc
+{
+    visibility: hidden !important;
+} 
