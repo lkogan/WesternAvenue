@@ -111,9 +111,13 @@ namespace WesternAvenue.Models
                                             DateTimeStyles.None);
                      
                     string currentDateTimeJSON = j.Get_API_Response(j.CURRENT_TIME_API_URL);
-                    DateTimeModels currentDateTime = JsonConvert.DeserializeObject<DateTimeModels>(currentDateTimeJSON);
-                    
-                    DateTime dtUpdateTime = DateTime.Parse(currentDateTime.formatted);
+                    DateTime dtUpdateTime = DateTime.Now;
+
+                    if (!string.IsNullOrEmpty(currentDateTimeJSON))
+                    {
+                        DateTimeModels currentDateTime = JsonConvert.DeserializeObject<DateTimeModels>(currentDateTimeJSON);
+                        dtUpdateTime = DateTime.Parse(currentDateTime.formatted);
+                    }
 
                     TimeSpan tsArrivesIn = dtArrivalTimeOnWestern.Subtract(dtUpdateTime);
                     int arrivesInMinutes = (int)tsArrivesIn.TotalMinutes;

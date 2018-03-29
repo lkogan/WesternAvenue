@@ -39,15 +39,24 @@ namespace WesternAvenue.Models
 
         public static string Get_API_Response(string apiURL)
         {
-            WebRequest req = HttpWebRequest.Create(apiURL);
-            req.Method = "GET"; 
-            req.ContentType = "application/json; charset=utf-8";
+            string output = string.Empty;
 
-            WebResponse resp = req.GetResponse();
-            Stream stream = resp.GetResponseStream();
-            StreamReader sr = new StreamReader(stream);
-            string output = sr.ReadToEnd();
+            try
+            {
+                WebRequest req = HttpWebRequest.Create(apiURL);
+                req.Method = "GET";
+                req.ContentType = "application/json; charset=utf-8";
 
+                WebResponse resp = req.GetResponse();
+                Stream stream = resp.GetResponseStream();
+                StreamReader sr = new StreamReader(stream);
+                output = sr.ReadToEnd();
+            }
+            catch
+            {
+                output = string.Empty;
+            }
+          
             return output;
         }
     }
