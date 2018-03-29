@@ -73,3 +73,13 @@ ul
 { 
 	padding: 0;
 }
+
+.gm-style-cc
+{
+	visibility: hidden !important;
+}
+
+.gm-style-mtc
+{
+ visibility: hidden !important;
+}

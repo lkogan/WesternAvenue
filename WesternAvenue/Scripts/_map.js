@@ -29,7 +29,7 @@
                 longitude: -87.766977
             },
             zoom: 15
-        }
+        };
 
         $scope.markers = [];
         $scope.locations = [];
