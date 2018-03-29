@@ -80,7 +80,7 @@ ul
 	visibility: hidden !important;
 }
 
-/*Map style buttons (roadmap/terrain*/
+/*Map style buttons (roadmap/terrain)*/
 .gm-style-mtc
 {
     visibility: hidden !important;
@@ -90,6 +90,18 @@ ul
 
 /*StreetView Icon*/
 .gm-svpc
+{
+    visibility: hidden !important;
+} 
+
+/*Full screen button*/
+.gm-fullscreen-control
+{
+    visibility: hidden !important;
+} 
+
+
+[title="Click to see this area on Google Maps"]
 {
     visibility: hidden !important;
 } 
