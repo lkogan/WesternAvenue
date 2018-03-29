@@ -31,11 +31,29 @@ textarea {
 }
  
 .angular-google-map-container
-{    
-    height: 200px;   
-    min-height: 200px !important; 
+{     
     box-shadow:2px 2px 3px 3px lightgrey;    
 }    
+ 
+
+@media (min-width:320px)  
+{ 
+    .angular-google-map-container 
+    {
+        height: 200px;   
+        min-height: 200px !important; 
+    }
+} 
+
+@media (min-width:961px)  
+{ 
+    .angular-google-map-container 
+    {
+        height: 600px;   
+        min-height: 600px !important; 
+    }
+}
+ 
 .angular-google-map 
 {    
     width: 100%  !important;    
@@ -44,7 +62,7 @@ textarea {
 }    
 
 #footer {
-      position:fixed;
+    position:fixed;
     bottom:0px;
     height:30px;
     width:100%;
