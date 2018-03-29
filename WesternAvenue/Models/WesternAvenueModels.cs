@@ -45,6 +45,15 @@ namespace WesternAvenue.Models
             string positionJSON = j.Get_GTFS_Response(j.METRA_API_URL + "positions");
             List<TripPosition> positionList = JsonConvert.DeserializeObject<List<TripPosition>>(positionJSON);
 
+            string currentDateTimeJSON = j.Get_API_Response(j.CURRENT_TIME_API_URL);
+            DateTime dtUpdateTime = DateTime.Now;
+
+            if (!string.IsNullOrEmpty(currentDateTimeJSON))
+            {
+                DateTimeModels currentDateTime = JsonConvert.DeserializeObject<DateTimeModels>(currentDateTimeJSON);
+                dtUpdateTime = DateTime.Parse(currentDateTime.formatted);
+            }
+             
             //Filter positions to contain only routes that stop at Western Avenue
             List<string> lstRoutesFilter = new List<string>();
             lstRoutesFilter.Add("MD-N");
@@ -109,16 +118,7 @@ namespace WesternAvenue.Models
                                             "yyyyMMdd HH:mm:ss",
                                             CultureInfo.InvariantCulture,
                                             DateTimeStyles.None);
-                     
-                    string currentDateTimeJSON = j.Get_API_Response(j.CURRENT_TIME_API_URL);
-                    DateTime dtUpdateTime = DateTime.Now;
-
-                    if (!string.IsNullOrEmpty(currentDateTimeJSON))
-                    {
-                        DateTimeModels currentDateTime = JsonConvert.DeserializeObject<DateTimeModels>(currentDateTimeJSON);
-                        dtUpdateTime = DateTime.Parse(currentDateTime.formatted);
-                    }
-
+                      
                     TimeSpan tsArrivesIn = dtArrivalTimeOnWestern.Subtract(dtUpdateTime);
                     int arrivesInMinutes = (int)tsArrivesIn.TotalMinutes;
 
