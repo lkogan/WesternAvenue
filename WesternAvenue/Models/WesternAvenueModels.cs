@@ -168,7 +168,8 @@ namespace WesternAvenue.Models
                     lstLocations.Add(loc);
                 }
             }
-              
+
+            lstLocations = lstLocations.OrderBy(x => x.ArrivalTime).ToList();
             return lstLocations;
         }
     }
