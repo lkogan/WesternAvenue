@@ -128,6 +128,11 @@ namespace WesternAvenue.Models
                         arrivesInMinutes = arrivesInMinutes - 1440;
                     }
 
+                    if (arrivesInMinutes < 0)
+                    {
+                        arrivesInMinutes = 0;
+                    }
+
                     arrivalTimeOnWestern = dtArrivalTimeOnWestern.ToString("HH:mm");
                     string currentNextStop = dictStations[lastStationAbbr];
 
