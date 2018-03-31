@@ -110,12 +110,7 @@ namespace WesternAvenue.Models
                     ts = TimeSpan.FromSeconds(delayInSeconds);
                     Delay = (int)ts.TotalMinutes + " min late" + Environment.NewLine;
                 }
-                 
-                DateTime dtAtLastStation = tuc.trip_update.stop_time_update[0].departure.time.low;
-                dtAtLastStation = dtAtLastStation.AddHours(-5);
-
-                string timeAtNextStation = dtAtLastStation.ToString("HH:mm");
-                 
+                  
                 string arrivalTimeOnWestern = westernAve.arrival_time;
                 DateTime dtArrivalTimeOnWestern = DateTime.ParseExact(arrivalTimeOnWestern,
                     "H:m:s",
@@ -132,7 +127,9 @@ namespace WesternAvenue.Models
                                         DateTimeStyles.None);
                       
                 TimeSpan tsArrivesIn = dtArrivalTimeOnWestern.Subtract(dtUpdateTime);
-                int arrivesInMinutes = (int)tsArrivesIn.TotalMinutes;
+                tsArrivesIn = RoundToNearest(tsArrivesIn, TimeSpan.FromMinutes(1));
+
+                int arrivesInMinutes = (int)tsArrivesIn.Minutes;
 
                 //Bug on server - after 6pm, 24 hrs gets added to the time.
                 if (arrivesInMinutes >= 1440)
@@ -148,16 +145,9 @@ namespace WesternAvenue.Models
                 arrivalTimeOnWestern = dtArrivalTimeOnWestern.ToString("HH:mm");
                 string currentNextStop = dictStations[nexsStationAbbr];
 
-                string description = string.Empty;
-                if ((currentNextStop.Equals("Western Ave")) && (arrivalTimeOnWestern.Equals(timeAtNextStation)))
-                {
-                    description = Delay;
-                }
-                else
-                {
-                    description = Delay + 
-                        "Next Stop: " + currentNextStop + ", " + timeAtNextStation;
-                }
+                string description = Delay +
+                        "Next Stop: " + currentNextStop;
+                
 
                 Location loc = new Location
                 {
@@ -187,6 +177,12 @@ namespace WesternAvenue.Models
 
             lstLocations = lstLocations.OrderBy(x => x.ArrivalTime).ToList();
             return lstLocations;
+        }
+
+        public static TimeSpan RoundToNearest(TimeSpan a, TimeSpan roundTo)
+        {
+            long ticks = (long)(Math.Round(a.Ticks / (double)roundTo.Ticks) * roundTo.Ticks);
+            return new TimeSpan(ticks);
         }
     }
 
