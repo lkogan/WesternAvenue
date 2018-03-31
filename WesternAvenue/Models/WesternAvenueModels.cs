@@ -30,6 +30,7 @@ namespace WesternAvenue.Models
         public string TripURL { get; set; }
 
         public string ArrivesIn { get; set; }
+        public string RouteNumber { get; set; }
     }
 
 
@@ -67,7 +68,11 @@ namespace WesternAvenue.Models
             for (int i = 0; i < positionList.Count; i++)
             {
                 string tripID = positionList[i].vehicle.trip.trip_id;
-                string routeID = positionList[i].vehicle.trip.route_id;                
+                string lineID = positionList[i].vehicle.trip.route_id;
+                string routeID = positionList[i].vehicle.vehicle.label;
+
+                //Exclude if already past the Western Avenue Station, but had not updated next station yet
+                if (positionList[i].vehicle.position.latitude < 41.8888) continue;  
 
                 //Create dictionary to resolve station abbrevs to names
                 string stationsJSON = j.Get_GTFS_Response(j.METRA_API_URL + "schedule/stops");
@@ -76,9 +81,24 @@ namespace WesternAvenue.Models
 
                 TripUpdateCollection tuc = tripUpdateList.Where(x => x.id.Equals(tripID)).FirstOrDefault();
                 if (tuc == null) continue; 
+                                
+                string nexsStationAbbr = tuc.trip_update.stop_time_update[0].stop_id;
 
-                string lastStationAbbr = tuc.trip_update.stop_time_update[0].stop_id;
-                if (lastStationAbbr.Equals("CUS")) continue;
+                string priorStationAbbr = (tuc.trip_update.stop_time_update.Count < 2) ? string.Empty : tuc.trip_update.stop_time_update[1].stop_id;
+
+                if (nexsStationAbbr.Equals("CUS")) continue;
+
+                string stopTimesJSON = j.Get_GTFS_Response(j.METRA_API_URL + "schedule/stop_times/" + tripID);
+                List<StopOnTrip> stopTimesList = JsonConvert.DeserializeObject<List<StopOnTrip>>(stopTimesJSON);
+                if (stopTimesList == null) continue;
+
+                if (stopTimesList[0].stop_id.Equals("CUS"))    //INBOUND - DOES not start at Chicago Union Station
+                {
+                    continue;
+                }
+
+                StopOnTrip westernAve = stopTimesList.Where(x => x.stop_id.Equals("WESTERNAVE")).FirstOrDefault();
+                if (westernAve == null) continue;
 
                 int delayInSeconds = tuc.trip_update.stop_time_update[0].arrival.delay;
 
@@ -92,86 +112,77 @@ namespace WesternAvenue.Models
                 }
                  
                 DateTime dtAtLastStation = tuc.trip_update.stop_time_update[0].departure.time.low;
-                  
+                dtAtLastStation = dtAtLastStation.AddHours(-4);
+
                 string timeAtNextStation = dtAtLastStation.ToString("HH:mm");
+                 
+                string arrivalTimeOnWestern = westernAve.arrival_time;
+                DateTime dtArrivalTimeOnWestern = DateTime.ParseExact(arrivalTimeOnWestern,
+                    "H:m:s",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None);
 
-                string stopTimesJSON = j.Get_GTFS_Response(j.METRA_API_URL + "schedule/stop_times/" + tripID);
-                List<StopOnTrip> stopTimesList = JsonConvert.DeserializeObject<List<StopOnTrip>>(stopTimesJSON);
-                if (stopTimesList == null) continue;
+                dtArrivalTimeOnWestern = dtArrivalTimeOnWestern.Add(ts);
 
-                if (!stopTimesList[0].stop_id.Equals("CUS"))    //INBOUND - DOES not start at Chicago Union Station
-                {
-                    StopOnTrip westernAve = stopTimesList.Where(x => x.stop_id.Equals("WESTERNAVE")).FirstOrDefault();
-                    if (westernAve == null) continue;
+                string dateTimeString = positionList[i].vehicle.trip.start_date + " " + positionList[i].vehicle.trip.start_time;
 
-                    string arrivalTimeOnWestern = westernAve.arrival_time;
-                    DateTime dtArrivalTimeOnWestern = DateTime.ParseExact(arrivalTimeOnWestern,
-                        "H:m:s",
-                        CultureInfo.InvariantCulture,
-                        DateTimeStyles.None);
-
-                    dtArrivalTimeOnWestern = dtArrivalTimeOnWestern.Add(ts);
-
-                    string dateTimeString = positionList[i].vehicle.trip.start_date + " " + positionList[i].vehicle.trip.start_time;
-
-                    DateTime startDt = DateTime.ParseExact(dateTimeString,
-                                            "yyyyMMdd HH:mm:ss",
-                                            CultureInfo.InvariantCulture,
-                                            DateTimeStyles.None);
+                DateTime startDt = DateTime.ParseExact(dateTimeString,
+                                        "yyyyMMdd HH:mm:ss",
+                                        CultureInfo.InvariantCulture,
+                                        DateTimeStyles.None);
                       
-                    TimeSpan tsArrivesIn = dtArrivalTimeOnWestern.Subtract(dtUpdateTime);
-                    int arrivesInMinutes = (int)tsArrivesIn.TotalMinutes;
+                TimeSpan tsArrivesIn = dtArrivalTimeOnWestern.Subtract(dtUpdateTime);
+                int arrivesInMinutes = (int)tsArrivesIn.TotalMinutes;
 
-                    //Bug on server - after 6pm, 24 hrs gets added to the time.
-                    if (arrivesInMinutes >= 1440)
-                    {
-                        arrivesInMinutes = arrivesInMinutes - 1440;
-                    }
-
-                    if (arrivesInMinutes < 0)
-                    {
-                        arrivesInMinutes = 0;
-                    }
-
-                    arrivalTimeOnWestern = dtArrivalTimeOnWestern.ToString("HH:mm");
-                    string currentNextStop = dictStations[lastStationAbbr];
-
-                    string description = string.Empty;
-                    if ((currentNextStop.Equals("Western Ave")) && (arrivalTimeOnWestern.Equals(timeAtNextStation)))
-                    {
-                        description = Delay;
-                    }
-                    else
-                    {
-                        description = Delay + 
-                            "Next Stop: " + dictStations[lastStationAbbr] + ", " + timeAtNextStation;
-                    }
-
-                    if (positionList[i].vehicle.position.latitude < 41.8888) continue;  //Exclude if already past the Western Avenue Station, but had not updated next station yet
-
-                    Location loc = new Location
-                    {
-                        LocationID = Convert.ToInt32(positionList[i].id),
-
-                        TripID = tripID,
-
-                        Lat = positionList[i].vehicle.position.latitude.ToString(),
-
-                        Long = positionList[i].vehicle.position.longitude.ToString(),
-
-                        ArrivesIn = arrivesInMinutes + " min",
-
-                        ArrivalTime = dtArrivalTimeOnWestern.ToString("HH:mm"),
-
-                        Description = description,
-
-                        ImagePath = "https://png.icons8.com/material/2x/train.png",
-
-                        TripURL = "https://metrarail.com/maps-schedules/train-lines/" + routeID + "/trip/" + tripID
-                    };
-
-                    lstLocations.Add(loc);
+                //Bug on server - after 6pm, 24 hrs gets added to the time.
+                if (arrivesInMinutes >= 1440)
+                {
+                    arrivesInMinutes = arrivesInMinutes - 1440;
                 }
+
+                if (arrivesInMinutes < 0)
+                {
+                    arrivesInMinutes = 0;
+                }
+
+                arrivalTimeOnWestern = dtArrivalTimeOnWestern.ToString("HH:mm");
+                string currentNextStop = dictStations[nexsStationAbbr];
+
+                string description = string.Empty;
+                if ((currentNextStop.Equals("Western Ave")) && (arrivalTimeOnWestern.Equals(timeAtNextStation)))
+                {
+                    description = Delay;
+                }
+                else
+                {
+                    description = Delay + 
+                        "Next Stop: " + currentNextStop + ", " + timeAtNextStation;
+                }
+
+                Location loc = new Location
+                {
+                    LocationID = Convert.ToInt32(positionList[i].id),
+
+                    TripID = tripID,
+
+                    RouteNumber = lineID + ", Route " + routeID,
+
+                    Lat = positionList[i].vehicle.position.latitude.ToString(),
+
+                    Long = positionList[i].vehicle.position.longitude.ToString(),
+
+                    ArrivesIn = arrivesInMinutes + " min",
+
+                    ArrivalTime = dtArrivalTimeOnWestern.ToString("HH:mm"),
+
+                    Description = description,
+
+                    ImagePath = "https://png.icons8.com/material/2x/train.png",
+
+                    TripURL = "https://metrarail.com/maps-schedules/train-lines/" + lineID + "/trip/" + tripID
+                };
+
+                lstLocations.Add(loc); 
             }
 
             lstLocations = lstLocations.OrderBy(x => x.ArrivalTime).ToList();
