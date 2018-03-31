@@ -112,7 +112,7 @@ namespace WesternAvenue.Models
                 }
                  
                 DateTime dtAtLastStation = tuc.trip_update.stop_time_update[0].departure.time.low;
-                dtAtLastStation = dtAtLastStation.AddHours(-4);
+                dtAtLastStation = dtAtLastStation.AddHours(-5);
 
                 string timeAtNextStation = dtAtLastStation.ToString("HH:mm");
                  
