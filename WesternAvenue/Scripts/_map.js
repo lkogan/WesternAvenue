@@ -25,8 +25,8 @@
         {
             center:
             {
-                latitude: 41.916886,
-                longitude: -87.766977
+                latitude: 41.8891667,   //Western Avenue Metra Station
+                longitude: -87.6880556
             },
             zoom: 15
         };
