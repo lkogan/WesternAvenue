@@ -1,4 +1,7 @@
-AWS CodeStar Sample ASP.NET Core Web Application
+Western Avenue
+Single-Page Application using AngularJS, And C# with WebAPI
+Purpose - showing approaching trains to Western Avenue Metra Station, displaying their geographical location + expected arrival time.
+![Screenshot1](Screenshot1.jpg?raw=true "Western Avenue - Screenshot")
 ==================================================
 
 This sample code helps get you started with a simple ASP.NET Core web application
